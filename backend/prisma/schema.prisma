@@ -8,7 +8,172 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String           @id @default(uuid())
+  email           String           @unique
+  name            String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  companies       Company[]
+  jobApplications JobApplication[]
+  tasks           Task[]
+  aiGenerations   AiGeneration[]
+}
+
+model Company {
+  id              String           @id @default(uuid())
+  name            String
+  website         String?
+  linkedinUrl     String?
+  description     String?
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  userId          String
+  user            User             @relation(fields: [userId], references: [id])
+  jobApplications JobApplication[]
+  contacts        Contact[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model JobApplication {
+  id              String            @id @default(uuid())
+  title           String
+  description     String?
+  sourceUrl       String?
+  salaryMin       Int?
+  salaryMax       Int?
+  currency        String?
+  location        String?
+  isRemote        Boolean           @default(false)
+  notes           String?
+  status          ApplicationStatus @default(DRAFT)
+  appliedAt       DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  userId          String
+  companyId       String
+  user            User              @relation(fields: [userId], references: [id])
+  company         Company           @relation(fields: [companyId], references: [id])
+  interviewStages InterviewStage[]
+  contacts        Contact[]
+  tasks           Task[]
+  aiGenerations   AiGeneration[]
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([status])
+}
+
+model InterviewStage {
+  id               String             @id @default(uuid())
+  name             String
+  type             InterviewStageType @default(OTHER)
+  scheduledAt      DateTime?
+  completedAt      DateTime?
+  notes            String?
+  feedback         String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  jobApplicationId String
+  jobApplication   JobApplication     @relation(fields: [jobApplicationId], references: [id])
+
+  @@index([jobApplicationId])
+  @@index([type])
+}
+
+model Contact {
+  id               String          @id @default(uuid())
+  name             String
+  role             String?
+  email            String?
+  phone            String?
+  linkedinUrl      String?
+  notes            String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  companyId        String
+  jobApplicationId String?
+  company          Company         @relation(fields: [companyId], references: [id])
+  jobApplication   JobApplication? @relation(fields: [jobApplicationId], references: [id])
+
+  @@index([companyId])
+  @@index([jobApplicationId])
+}
+
+model Task {
+  id               String          @id @default(uuid())
+  title            String
+  description      String?
+  dueDate          DateTime?
+  completedAt      DateTime?
+  status           TaskStatus      @default(TODO)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  userId           String
+  jobApplicationId String?
+  user             User            @relation(fields: [userId], references: [id])
+  jobApplication   JobApplication? @relation(fields: [jobApplicationId], references: [id])
+
+  @@index([userId])
+  @@index([jobApplicationId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model AiGeneration {
+  id               String           @id @default(uuid())
+  type             AiGenerationType
+  prompt           String
+  result           String
+  metadata         Json?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  userId           String
+  jobApplicationId String?
+  user             User             @relation(fields: [userId], references: [id])
+  jobApplication   JobApplication?  @relation(fields: [jobApplicationId], references: [id])
+
+  @@index([userId])
+  @@index([jobApplicationId])
+  @@index([type])
+}
+
+enum ApplicationStatus {
+  DRAFT
+  APPLIED
+  SCREENING
+  INTERVIEWING
+  OFFER
+  REJECTED
+  WITHDRAWN
+  ARCHIVED
+}
+
+enum InterviewStageType {
+  HR_SCREEN
+  TECHNICAL
+  LIVE_CODING
+  SYSTEM_DESIGN
+  CULTURE_FIT
+  FINAL
+  OFFER
+  OTHER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELED
+}
+
+enum AiGenerationType {
+  COVER_LETTER
+  RESUME_SUMMARY
+  APPLICATION_NOTES
+  INTERVIEW_PREP
+  FOLLOW_UP_MESSAGE
+  OTHER
 }

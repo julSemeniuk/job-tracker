@@ -68,6 +68,25 @@ Stop PostgreSQL:
 pnpm db:stop
 ```
 
+## Database schema
+
+The initial Prisma schema includes:
+
+- User
+- Company
+- JobApplication
+- InterviewStage
+- Contact
+- Task
+- AiGeneration
+
+After schema changes, run:
+
+```bash
+pnpm db:migrate
+pnpm db:generate
+```
+
 ## Run locally
 
 Start the backend in development mode:
