@@ -1,0 +1,10 @@
+process.env.NODE_ENV = 'test';
+process.env.GOOGLE_CLIENT_ID = 'test-google-client';
+process.env.GOOGLE_CLIENT_SECRET = 'test-google-secret';
+process.env.GOOGLE_CALLBACK_URL = 'http://localhost:3001/auth/google/callback';
+process.env.FRONTEND_AUTH_CALLBACK_URL = 'http://localhost:5173/auth/callback';
+process.env.JWT_ACCESS_SECRET = 'test-access-secret-that-is-long-enough';
+process.env.JWT_REFRESH_SECRET = 'test-refresh-secret-that-is-different';
+process.env.JWT_ACCESS_EXPIRES_IN = '15m';
+process.env.JWT_REFRESH_EXPIRES_IN = '7d';
+process.env.REFRESH_TOKEN_COOKIE_NAME = 'refreshToken';

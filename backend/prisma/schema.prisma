@@ -8,15 +8,18 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(uuid())
-  email           String           @unique
-  name            String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  companies       Company[]
-  jobApplications JobApplication[]
-  tasks           Task[]
-  aiGenerations   AiGeneration[]
+  id               String           @id @default(uuid())
+  email            String           @unique
+  name             String?
+  googleId         String?          @unique
+  avatarUrl        String?
+  refreshTokenHash String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  companies        Company[]
+  jobApplications  JobApplication[]
+  tasks            Task[]
+  aiGenerations    AiGeneration[]
 }
 
 model Company {
