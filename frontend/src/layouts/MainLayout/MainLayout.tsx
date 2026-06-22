@@ -1,7 +1,7 @@
 import { AppBar, Box, Container, Toolbar, Typography } from '@mui/material'
 import { Outlet } from 'react-router-dom'
-import { layoutStyles } from './styles'
-import type { MainLayoutProps } from './types'
+import { layoutStyles } from '@layouts/MainLayout/styles'
+import type { MainLayoutProps } from '@layouts/MainLayout/types'
 
 export const MainLayout = ({ headerTitle = 'Job Tracker' }: MainLayoutProps) => {
   return (

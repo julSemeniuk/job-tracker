@@ -188,11 +188,32 @@ Forbidden dependencies:
 - a submodule → another module's internals;
 - deep imports into a module or submodule from outside its boundary.
 
-Cross-module communication must use public APIs exposed from `index.ts`. Path aliases are intentionally not configured yet; alias-based import examples describe the future convention, not current tooling.
+Cross-module communication must use public APIs exposed from `index.ts`. All local frontend imports use configured aliases and absolute paths. Relative local imports (`./` and `../`) are not allowed. Imports from external npm packages remain package imports.
+
+### Path aliases
+
+| Alias | Source folder |
+| --- | --- |
+| `@src/*` | `src/*` |
+| `@modules/*` | `src/modules/*` |
+| `@layouts/*` | `src/layouts/*` |
+| `@providers/*` | `src/providers/*` |
+| `@router/*` | `src/router/*` |
+| `@theme/*` | `src/theme/*` |
+| `@hooks/*` | `src/hooks/*` |
+| `@utils/*` | `src/utils/*` |
+| `@constants/*` | `src/constants/*` |
+| `@services/*` | `src/services/*` |
+| `@assets/*` | `src/assets/*` |
+
+Use `@src/*` for root files and paths without a dedicated alias, including shared TypeScript types.
 
 ```ts
-// Future public API import after aliases are configured.
+// Public module API.
 import { JobsPage } from '@modules/jobs'
+
+// Root source file.
+import App from '@src/App'
 
 // Forbidden deep import.
 import { JobsPage } from '@modules/jobs/pages/JobsPage'

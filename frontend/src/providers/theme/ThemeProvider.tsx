@@ -4,7 +4,7 @@ import {
   useMediaQuery,
 } from '@mui/material'
 import { useMemo, type PropsWithChildren } from 'react'
-import { createAppTheme } from '../../theme/createAppTheme'
+import { createAppTheme } from '@theme/createAppTheme'
 
 export const ThemeProvider = ({ children }: PropsWithChildren) => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')

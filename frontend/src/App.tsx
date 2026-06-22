@@ -1,8 +1,9 @@
 import { Stack, Typography } from '@mui/material'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { MainLayout } from './layouts/MainLayout'
-import { ThemeProvider } from './providers/theme'
+import { MainLayout } from '@layouts/MainLayout'
+import { ThemeProvider } from '@providers/theme'
 
+//TODO: Replace with a real home page
 const HomePage = () => {
   return (
     <Stack spacing={1}>
