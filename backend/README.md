@@ -2,52 +2,86 @@
 
 NestJS backend application for Job Tracker.
 
+## Prerequisites
+
+- Node.js
+- pnpm
+- Docker Desktop with Docker Compose
+
 ## Setup
+
+Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-## Environment
+Copy `.env.example` to `.env`:
 
-Create a `.env` file from `.env.example`:
-
-```bash
-cp .env.example .env
+```powershell
+Copy-Item .env.example .env
 ```
 
-Variables:
+The local development defaults are:
 
 ```env
 PORT=3001
 FRONTEND_URL=http://localhost:5173
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/job_tracker_dev?schema=public"
+```
+
+## Database
+
+Start PostgreSQL:
+
+```bash
+pnpm db:start
+```
+
+Generate Prisma Client:
+
+```bash
+pnpm db:generate
+```
+
+Create and apply the initial migration using the migration name `init`:
+
+```bash
+pnpm db:migrate --name init
+```
+
+For later migrations, use a descriptive migration name:
+
+```bash
+pnpm db:migrate --name <migration-name>
+```
+
+Open Prisma Studio:
+
+```bash
+pnpm db:studio
+```
+
+Stop PostgreSQL:
+
+```bash
+pnpm db:stop
 ```
 
 ## Run locally
+
+Start the backend in development mode:
 
 ```bash
 pnpm start:dev
 ```
 
-The API will be available at:
-
-```text
-http://localhost:3001
-```
+The API is available at `http://localhost:3001`.
 
 ## Health check
 
 ```text
 GET http://localhost:3001/health
-```
-
-Example response:
-
-```json
-{
-  "status": "ok",
-  "timestamp": "2026-06-22T08:01:39.915Z"
-}
 ```
 
 ## Build
