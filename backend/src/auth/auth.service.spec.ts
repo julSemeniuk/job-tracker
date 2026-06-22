@@ -1,21 +1,35 @@
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { createHmac } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
 
-const CONFIG = {
-  JWT_ACCESS_SECRET: 'access-secret',
-  JWT_REFRESH_SECRET: 'refresh-secret',
-  JWT_ACCESS_EXPIRES_IN: '15m',
-  JWT_REFRESH_EXPIRES_IN: '7d',
-  REFRESH_TOKEN_COOKIE_NAME: 'refreshToken',
-  FRONTEND_AUTH_CALLBACK_URL: 'http://localhost:5173/auth/callback',
-  NODE_ENV: 'test',
+const AUTH_CONFIGURATION = {
+  google: {
+    clientId: 'google-client',
+    clientSecret: 'google-secret',
+    callbackUrl: 'http://localhost:3001/auth/google/callback',
+  },
+  frontendCallbackUrl: 'http://localhost:5173/auth/callback',
+  jwt: {
+    accessSecret: 'access-secret',
+    refreshSecret: 'refresh-secret',
+    accessExpiresIn: '15m',
+    refreshExpiresIn: '7d',
+  },
+  refreshCookieName: 'refreshToken',
+} as const;
+
+const APP_CONFIGURATION = {
+  environment: 'test',
+  isProduction: false,
+  port: 3001,
+  frontendOrigins: ['http://localhost:5173'],
 } as const;
 
 const hashRefreshToken = (token: string) =>
-  createHmac('sha256', CONFIG.JWT_REFRESH_SECRET).update(token).digest('hex');
+  createHmac('sha256', AUTH_CONFIGURATION.jwt.refreshSecret)
+    .update(token)
+    .digest('hex');
 
 describe('AuthService', () => {
   const userRepository = {
@@ -28,13 +42,11 @@ describe('AuthService', () => {
     signAsync: jest.fn(),
     verifyAsync: jest.fn(),
   };
-  const configService = {
-    get: jest.fn((key: keyof typeof CONFIG) => CONFIG[key]),
-  };
   const service = new AuthService(
     { user: userRepository } as unknown as PrismaService,
     jwtService as unknown as JwtService,
-    configService as unknown as ConfigService,
+    AUTH_CONFIGURATION,
+    APP_CONFIGURATION,
   );
 
   beforeEach(() => {

@@ -1,10 +1,13 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { appConfig } from './config/app.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const config = app.get<ConfigType<typeof appConfig>>(appConfig.KEY);
 
   app.enableShutdownHooks();
 
@@ -19,10 +22,10 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: process.env.FRONTEND_URL,
+    origin: config.frontendOrigins,
     credentials: true,
   });
 
-  await app.listen(process.env.PORT || 3001);
+  await app.listen(config.port);
 }
 void bootstrap();

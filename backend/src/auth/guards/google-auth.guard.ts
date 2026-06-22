@@ -1,12 +1,14 @@
 import {
   ExecutionContext,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import type { Request, Response } from 'express';
+import { appConfig } from '../../config/app.config';
 
 const OAUTH_STATE_COOKIE_NAME = 'googleOAuthState';
 const OAUTH_STATE_MAX_AGE_MS = 10 * 60 * 1000;
@@ -18,7 +20,10 @@ type OAuthRequest = Omit<Request, 'cookies'> & {
 
 @Injectable()
 export class GoogleAuthGuard extends AuthGuard('google') {
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    @Inject(appConfig.KEY)
+    private readonly config: ConfigType<typeof appConfig>,
+  ) {
     super();
   }
 
@@ -73,7 +78,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {
   private stateCookieOptions(maxAge?: number) {
     return {
       httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      secure: this.config.isProduction,
       sameSite: 'lax' as const,
       path: '/auth/google/callback',
       ...(maxAge === undefined ? {} : { maxAge }),

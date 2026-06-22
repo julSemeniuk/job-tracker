@@ -22,6 +22,10 @@ Copy `.env.example` to `.env`:
 Copy-Item .env.example .env
 ```
 
+`.env.example` contains local-development defaults only. Deployed environments
+must provide their own variables through the hosting platform; application code
+does not contain deployment hostnames.
+
 The local development defaults are:
 
 ```env
@@ -39,6 +43,18 @@ JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 REFRESH_TOKEN_COOKIE_NAME=refreshToken
 ```
+
+`FRONTEND_URL` accepts a comma-separated allowlist when more than one frontend
+origin is required:
+
+```env
+FRONTEND_URL=https://app.example.com,https://admin.example.com
+```
+
+Configuration is validated before Nest starts. Production configuration rejects
+HTTP URLs, localhost URLs, JWT secrets shorter than 32 characters, and identical
+access/refresh secrets. Invalid token durations, ports, cookie names, and missing
+OAuth values also stop startup with a descriptive error.
 
 Generate independent JWT secrets for local development, for example:
 

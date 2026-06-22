@@ -1,8 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-google-oauth20';
-import { getRequiredConfig } from '../auth-config';
+import { authConfig } from '../../config/auth.config';
 import { GoogleIdentity } from '../auth.types';
 
 interface GoogleProfileJson {
@@ -11,11 +11,14 @@ interface GoogleProfileJson {
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor(configService: ConfigService) {
+  constructor(
+    @Inject(authConfig.KEY)
+    config: ConfigType<typeof authConfig>,
+  ) {
     super({
-      clientID: getRequiredConfig(configService, 'GOOGLE_CLIENT_ID'),
-      clientSecret: getRequiredConfig(configService, 'GOOGLE_CLIENT_SECRET'),
-      callbackURL: getRequiredConfig(configService, 'GOOGLE_CALLBACK_URL'),
+      clientID: config.google.clientId,
+      clientSecret: config.google.clientSecret,
+      callbackURL: config.google.callbackUrl,
       scope: ['email', 'profile'],
     });
   }

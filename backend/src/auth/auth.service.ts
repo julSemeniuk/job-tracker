@@ -1,8 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { CookieOptions } from 'express';
+import { appConfig } from '../config/app.config';
+import { authConfig } from '../config/auth.config';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AuthResponse,
@@ -11,7 +13,6 @@ import {
   safeUserSelect,
   TokenPayload,
 } from './auth.types';
-import { getRequiredConfig } from './auth-config';
 import { tokenDurationToSeconds } from './token-duration';
 
 @Injectable()
@@ -26,24 +27,21 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(authConfig.KEY)
+    private readonly authConfiguration: ConfigType<typeof authConfig>,
+    @Inject(appConfig.KEY)
+    private readonly appConfiguration: ConfigType<typeof appConfig>,
   ) {
-    this.accessSecret = getRequiredConfig(configService, 'JWT_ACCESS_SECRET');
-    this.refreshSecret = getRequiredConfig(configService, 'JWT_REFRESH_SECRET');
+    this.accessSecret = authConfiguration.jwt.accessSecret;
+    this.refreshSecret = authConfiguration.jwt.refreshSecret;
     this.accessExpiresInSeconds = tokenDurationToSeconds(
-      getRequiredConfig(configService, 'JWT_ACCESS_EXPIRES_IN'),
+      authConfiguration.jwt.accessExpiresIn,
     );
     this.refreshExpiresInSeconds = tokenDurationToSeconds(
-      getRequiredConfig(configService, 'JWT_REFRESH_EXPIRES_IN'),
+      authConfiguration.jwt.refreshExpiresIn,
     );
-    this.refreshCookieName = getRequiredConfig(
-      configService,
-      'REFRESH_TOKEN_COOKIE_NAME',
-    );
-    this.frontendCallbackUrl = getRequiredConfig(
-      configService,
-      'FRONTEND_AUTH_CALLBACK_URL',
-    );
+    this.refreshCookieName = authConfiguration.refreshCookieName;
+    this.frontendCallbackUrl = authConfiguration.frontendCallbackUrl;
   }
 
   async loginWithGoogle(identity: GoogleIdentity): Promise<string> {
@@ -188,7 +186,7 @@ export class AuthService {
   getRefreshCookieOptions(): CookieOptions {
     return {
       httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      secure: this.appConfiguration.isProduction,
       sameSite: 'lax',
       path: '/auth',
       maxAge: this.refreshExpiresInSeconds * 1000,

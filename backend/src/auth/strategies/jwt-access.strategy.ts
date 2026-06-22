@@ -1,8 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { getRequiredConfig } from '../auth-config';
+import { authConfig } from '../../config/auth.config';
 import { TokenPayload } from '../auth.types';
 
 function isAccessTokenPayload(payload: unknown): payload is TokenPayload {
@@ -24,11 +24,14 @@ export class JwtAccessStrategy extends PassportStrategy(
   Strategy,
   'jwt-access',
 ) {
-  constructor(configService: ConfigService) {
+  constructor(
+    @Inject(authConfig.KEY)
+    config: ConfigType<typeof authConfig>,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: getRequiredConfig(configService, 'JWT_ACCESS_SECRET'),
+      secretOrKey: config.jwt.accessSecret,
     });
   }
 
