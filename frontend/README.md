@@ -1,107 +1,115 @@
-# Frontend Architecture
+# Frontend
+
+The frontend is a React and TypeScript application built with Vite. It uses domain-driven modules, module/submodule boundaries, and component colocation.
+
+This project does **not** use Feature-Sliced Design (FSD).
 
 ## Architecture Approach
 
-We will use a hybrid architecture based on:
+Business functionality belongs in domain modules. Reusable, business-agnostic infrastructure lives in flat folders directly under `src` rather than inside a `shared/` folder.
 
-- Domain-driven modules
-- Module/Submodule architecture
-- Component colocation pattern
+The project intentionally has no `app/` layer. `App.tsx` is currently sufficient for provider composition, routing, and global application wiring. An `app/` layer may be introduced later if dedicated bootstrap logic, guards, layouts, or application-level configuration make it valuable.
 
-At the current stage, we intentionally avoid introducing an `app/` layer because the application does not yet require dedicated bootstrap logic, layouts, guards, or application-level configuration.
-
-If the application grows and requires those concerns, an `app/` layer may be introduced later.
-
-## Planned Project Structure
+## Source Structure
 
 ```text
 src/
-├── modules/
-├── shared/
-├── providers/
-├── router/
-├── assets/
-├── App.tsx
-├── main.tsx
+├── modules/       # business domains and their submodules
+├── layouts/       # route-level application layouts
+├── providers/     # global React providers
+├── router/        # routes and route configuration
+├── theme/         # MUI theme factory and design tokens
+├── hooks/         # business-agnostic reusable hooks
+├── utils/         # business-agnostic helper functions
+├── constants/     # shared application constants
+├── types/         # cross-cutting TypeScript types
+├── services/      # business-agnostic infrastructure services
+├── assets/        # images, icons, and fonts
+├── App.tsx        # application composition root
+├── main.tsx       # browser entry point
 └── vite-env.d.ts
 ```
 
-## Folder Responsibilities
+Not every planned folder must exist before it contains code. Infrastructure folders should be introduced when their first concrete responsibility appears.
 
-### App.tsx
+## Application Entry Points
 
-Application composition root.
+### `App.tsx`
 
-Responsible for:
+The application composition root is responsible for:
 
-- composing providers;
-- rendering router;
+- composing global providers;
+- rendering the router;
+- connecting layouts and route content;
 - global application wiring.
 
-### main.tsx
+### `main.tsx`
 
-Application entry point.
+The browser entry point mounts React and renders `App`.
 
-Responsible for:
+## UI System
 
-- mounting React application;
-- rendering App component.
+The base UI system uses Material UI with Emotion:
 
-### modules
+- `@mui/material` for components and theming;
+- `@mui/icons-material` for Material icons;
+- `@emotion/react` and `@emotion/styled` as the styling engine.
 
-Business domains.
+Global browser normalization is provided by MUI `CssBaseline` inside the application theme provider. Layout components use MUI primitives and theme tokens rather than hard-coded page-level styling.
 
-Examples:
+## Theme
 
-- auth
-- jobs
-- profile
-- dashboard
-- settings
+The theme is split by token responsibility and composed by a single factory:
 
-Modules should be isolated and communicate only through public APIs.
+```text
+src/theme/
+├── createAppTheme.ts
+├── palette.ts
+└── typography.ts
+```
 
-### shared
+- `createAppTheme.ts` combines palette and typography options with MUI defaults.
+- `palette.ts` defines the light and dark Modern SaaS Indigo palettes and selects tokens by mode.
+- `typography.ts` defines fonts, weights, sizes, line heights, and button text behavior.
 
-Reusable code without business-specific knowledge.
+Breakpoints, component overrides, shape, and shadows use MUI defaults. They should receive dedicated files only if the product develops a concrete customization that makes the extra abstraction worthwhile.
 
-Examples:
+### Color-mode decision
 
-- ui
-- hooks
-- utils
-- constants
-- types
-- services
+Both light and dark themes use the approved **Modern SaaS Indigo** visual direction. The light palette combines indigo and violet accents with cool neutral surfaces. The dark palette uses neutral ink backgrounds with brighter accents and status colors for readable contrast.
 
-### providers
+The provider follows the user's operating-system preference through `prefers-color-scheme`. Manual theme selection and persistence are intentionally deferred until the application has settings UI. Mode-specific tokens remain behind `createAppTheme(mode)`, so consumers use semantic MUI tokens and do not branch on color mode.
 
-Global providers.
+## Theme Provider
 
-Examples:
+```text
+src/providers/theme/
+├── ThemeProvider.tsx
+└── index.ts
+```
 
-- QueryClientProvider
-- ThemeProvider
-- AuthProvider
-- LocalizationProvider
+The application `ThemeProvider` detects the system color preference, memoizes the matching MUI theme, wraps its children with MUI's provider, and applies `CssBaseline`. `App.tsx` owns this provider composition.
 
-### router
+Additional global providers, such as TanStack Query, authentication, localization, or feature flags, should be colocated in their own folders under `src/providers`.
 
-Application routes and route configuration.
+## Main Layout
 
-### assets
+```text
+src/layouts/MainLayout/
+├── MainLayout.tsx
+├── styles.ts
+├── types.ts
+└── index.ts
+```
 
-Static assets.
+- `MainLayout.tsx` renders the header placeholder, main content container, and React Router `Outlet`.
+- `styles.ts` contains theme-aware MUI `sx` definitions.
+- `types.ts` contains the layout's public TypeScript contract.
+- `index.ts` exposes the layout's public API.
 
-Examples:
-
-- images
-- icons
-- fonts
+The layout is intentionally named `MainLayout`; the project does not use `AppShell` naming.
 
 ## Module Structure
-
-Example:
 
 ```text
 src/modules/jobs/
@@ -118,23 +126,21 @@ src/modules/jobs/
 └── index.ts
 ```
 
-Responsibilities:
+- `api` contains API clients and query hooks.
+- `components` contains module-specific UI.
+- `hooks` contains module-specific hooks.
+- `pages` contains route pages.
+- `schemas` contains validation schemas.
+- `services` contains business services.
+- `store` contains local state management.
+- `types` contains module TypeScript types.
+- `utils` contains module helper functions.
+- `submodules` contains child business domains.
+- `index.ts` defines the module's public API.
 
-- api → API clients and query hooks
-- components → module-specific UI
-- hooks → module hooks
-- pages → route pages
-- schemas → validation schemas
-- services → business services
-- store → local state management
-- types → TypeScript types
-- utils → helper functions
-- submodules → child business domains
-- index.ts → public API exports
+Create a module when a capability is a separate business domain, has its own routes, API, and state, and can reasonably exist independently.
 
 ## Submodule Structure
-
-Example:
 
 ```text
 src/modules/jobs/submodules/applications/
@@ -150,9 +156,11 @@ src/modules/jobs/submodules/applications/
 └── index.ts
 ```
 
-## Component Colocation Pattern
+Create a submodule when it belongs to a parent module, shares the same business context, and cannot reasonably exist independently.
 
-Each meaningful component may have its own folder:
+## Component Colocation
+
+Meaningful components may own a folder containing their implementation and closely related files:
 
 ```text
 JobCard/
@@ -163,49 +171,42 @@ JobCard/
 └── index.ts
 ```
 
-## When to Create a Module
-
-- separate business domain;
-- has its own routes;
-- has its own API and state;
-- can exist independently.
-
-## When to Create a Submodule
-
-- belongs to a parent module;
-- shares the same business context;
-- cannot reasonably exist independently.
-
 ## Import Boundaries
 
-Allowed:
+Allowed dependency directions:
 
-- `App.tsx` → modules
-- `App.tsx` → providers
-- `App.tsx` → router
-- modules → shared
-- modules → own submodules
-- submodules → shared
-- providers → shared
-- router → shared
+- `App.tsx` → modules, layouts, providers, and router;
+- modules → flat reusable infrastructure and their own submodules;
+- submodules → flat reusable infrastructure;
+- providers → theme and flat reusable infrastructure;
+- router → layouts, module public APIs, and flat reusable infrastructure.
 
-Forbidden:
+Forbidden dependencies:
 
-- shared → modules
-- shared → router
-- shared → providers
-- module → another module internals
-- submodule → another module internals
-- deep imports
+- reusable infrastructure → business modules;
+- one module → another module's internals;
+- a submodule → another module's internals;
+- deep imports into a module or submodule from outside its boundary.
 
-Good:
+Cross-module communication must use public APIs exposed from `index.ts`. Path aliases are intentionally not configured yet; alias-based import examples describe the future convention, not current tooling.
 
 ```ts
-import { JobsPage } from '@modules/jobs';
+// Future public API import after aliases are configured.
+import { JobsPage } from '@modules/jobs'
+
+// Forbidden deep import.
+import { JobsPage } from '@modules/jobs/pages/JobsPage'
 ```
 
-Bad:
+## Development
 
-```ts
-import { JobsPage } from '@modules/jobs/pages/JobsPage';
+```bash
+pnpm install
+pnpm dev
+```
+
+Create a production build and run TypeScript validation with:
+
+```bash
+pnpm build
 ```
