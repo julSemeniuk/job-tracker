@@ -1,18 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { authApi } from '@modules/auth/api/authApi'
-import type {
-  AuthStatus,
-  AuthUser,
-} from '@modules/auth/types/auth.types'
+import { authApi } from '@src/modules/auth/services/authApi'
+import type { IAuthState } from '@modules/auth/types'
 
-export interface AuthState {
-  accessToken: string | null
-  user: AuthUser | null
-  status: AuthStatus
-  isAuthenticated: boolean
-}
-
-const initialState: AuthState = {
+const initialState: IAuthState = {
   accessToken: null,
   user: null,
   status: 'idle',
@@ -23,7 +13,7 @@ export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    clearAuth: (state) => {
+    clearAuth: state => {
       state.accessToken = null
       state.user = null
       state.status = 'unauthenticated'
@@ -31,38 +21,32 @@ export const authSlice = createSlice({
     },
   },
   selectors: {
-    selectAccessToken: (state) => state.accessToken,
-    selectAuthUser: (state) => state.user,
-    selectAuthStatus: (state) => state.status,
-    selectIsAuthenticated: (state) => state.isAuthenticated,
+    selectAccessToken: state => state.accessToken,
+    selectAuthUser: state => state.user,
+    selectAuthStatus: state => state.status,
+    selectIsAuthenticated: state => state.isAuthenticated,
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
-      .addMatcher(authApi.endpoints.refreshAuth.matchPending, (state) => {
+      .addMatcher(authApi.endpoints.refreshAuth.matchPending, state => {
         state.status = 'loading'
       })
-      .addMatcher(
-        authApi.endpoints.refreshAuth.matchFulfilled,
-        (state, action) => {
-          state.accessToken = action.payload.accessToken
-          state.user = action.payload.user
-          state.status = 'authenticated'
-          state.isAuthenticated = true
-        },
-      )
-      .addMatcher(authApi.endpoints.refreshAuth.matchRejected, (state) => {
+      .addMatcher(authApi.endpoints.refreshAuth.matchFulfilled, (state, action) => {
+        state.accessToken = action.payload.accessToken
+        state.user = action.payload.user
+        state.status = 'authenticated'
+        state.isAuthenticated = true
+      })
+      .addMatcher(authApi.endpoints.refreshAuth.matchRejected, state => {
         state.accessToken = null
         state.user = null
         state.status = 'unauthenticated'
         state.isAuthenticated = false
       })
-      .addMatcher(
-        authApi.endpoints.getCurrentUser.matchFulfilled,
-        (state, action) => {
-          state.user = action.payload
-        },
-      )
-      .addMatcher(authApi.endpoints.logout.matchFulfilled, (state) => {
+      .addMatcher(authApi.endpoints.getCurrentUser.matchFulfilled, (state, action) => {
+        state.user = action.payload
+      })
+      .addMatcher(authApi.endpoints.logout.matchFulfilled, state => {
         state.accessToken = null
         state.user = null
         state.status = 'unauthenticated'
@@ -72,11 +56,8 @@ export const authSlice = createSlice({
 })
 
 export const { clearAuth } = authSlice.actions
-export const {
-  selectAccessToken,
-  selectAuthUser,
-  selectAuthStatus,
-  selectIsAuthenticated,
-} = authSlice.selectors
+export const { selectAccessToken, selectAuthStatus, selectAuthUser, selectIsAuthenticated } =
+  authSlice.selectors
 
 export const authReducer = authSlice.reducer
+export type AuthState = IAuthState

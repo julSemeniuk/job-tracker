@@ -1,55 +1,30 @@
-import { Stack, Typography } from '@mui/material'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { APP_ROUTES } from '@constants/routes'
 import { MainLayout } from '@layouts/MainLayout'
 import {
-  AuthBootstrap,
-  AuthCallbackPage,
-  LoginPage,
-  LogoutButton,
-  ProtectedRoute,
+  AuthCallbackController,
+  AuthController,
+  AuthSessionInitializer,
+  RequireAuth,
 } from '@modules/auth'
+import { HomePage } from '@src/pages'
 import { ThemeProvider } from '@providers/theme'
-import { useGetHealthQuery } from '@services/api/healthApi'
-
-//TODO: Replace with a real home page
-const HomePage = () => {
-  const { data, error, isLoading } = useGetHealthQuery()
-
-  const healthStatus = isLoading
-    ? 'Checking API...'
-    : error
-      ? 'API unavailable'
-      : `API status: ${data?.status}`
-
-  return (
-    <Stack spacing={1}>
-      <Typography component="h1" variant="h3">
-        Job Tracker
-      </Typography>
-      <Typography color="text.secondary">
-        Track your job applications in one place.
-      </Typography>
-      <Typography color={error ? 'error' : 'success'}>{healthStatus}</Typography>
-      <LogoutButton />
-    </Stack>
-  )
-}
 
 const App = () => {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <AuthBootstrap />
+        <AuthSessionInitializer />
         <Routes>
           <Route element={<MainLayout />}>
-            <Route element={<AuthCallbackPage />} path="/auth/callback" />
-            <Route element={<LoginPage />} path="/login" />
+            <Route element={<AuthCallbackController />} path={APP_ROUTES.AUTH_CALLBACK} />
+            <Route element={<AuthController />} path={APP_ROUTES.LOGIN} />
           </Route>
           <Route
             element={
-              <ProtectedRoute>
+              <RequireAuth>
                 <MainLayout />
-              </ProtectedRoute>
+              </RequireAuth>
             }
           >
             <Route element={<HomePage />} index />

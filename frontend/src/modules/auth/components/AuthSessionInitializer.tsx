@@ -1,25 +1,29 @@
 import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useRefreshAuthMutation } from '@modules/auth/api/authApi'
+import { APP_ROUTES } from '@constants/routes'
+import { useRefreshAuthMutation } from '@src/modules/auth/services/authApi'
 import { selectAuthStatus } from '@modules/auth/store/authSlice'
 import { useAppSelector } from '@providers/store/hooks'
+import { AUTH_STATUS } from '@modules/auth/constants'
 
-export const AuthBootstrap = () => {
+export const AuthSessionInitializer = (): null => {
   const location = useLocation()
   const status = useAppSelector(selectAuthStatus)
   const [refreshAuth] = useRefreshAuthMutation()
   const attemptedRef = useRef(false)
 
   useEffect(() => {
-    if (
+    const shouldSkipSessionRestore =
       attemptedRef.current ||
-      status !== 'idle' ||
-      location.pathname === '/auth/callback'
-    ) {
+      status !== AUTH_STATUS.IDLE ||
+      location.pathname === APP_ROUTES.AUTH_CALLBACK
+
+    if (shouldSkipSessionRestore) {
       return
     }
 
     attemptedRef.current = true
+
     void refreshAuth()
   }, [location.pathname, refreshAuth, status])
 

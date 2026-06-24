@@ -1,4 +1,4 @@
-import type { SxProps, Theme } from '@mui/material/styles'
+import type { StylesProps } from '@src/types'
 
 export const layoutStyles = {
   root: {
@@ -14,6 +14,8 @@ export const layoutStyles = {
     color: 'text.primary',
   },
   toolbar: {
+    display: 'flex',
+    justifyContent: 'space-between',
     minHeight: 64,
   },
   main: {
@@ -21,4 +23,4 @@ export const layoutStyles = {
     flex: 1,
     py: { xs: 3, md: 4 },
   },
-} satisfies Record<string, SxProps<Theme>>
+} satisfies StylesProps
