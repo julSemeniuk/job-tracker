@@ -1,6 +1,13 @@
 import { Stack, Typography } from '@mui/material'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { MainLayout } from '@layouts/MainLayout'
+import {
+  AuthBootstrap,
+  AuthCallbackPage,
+  LoginPage,
+  LogoutButton,
+  ProtectedRoute,
+} from '@modules/auth'
 import { ThemeProvider } from '@providers/theme'
 import { useGetHealthQuery } from '@services/api/healthApi'
 
@@ -23,6 +30,7 @@ const HomePage = () => {
         Track your job applications in one place.
       </Typography>
       <Typography color={error ? 'error' : 'success'}>{healthStatus}</Typography>
+      <LogoutButton />
     </Stack>
   )
 }
@@ -31,9 +39,20 @@ const App = () => {
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <AuthBootstrap />
         <Routes>
           <Route element={<MainLayout />}>
-            <Route index element={<HomePage />} />
+            <Route element={<AuthCallbackPage />} path="/auth/callback" />
+            <Route element={<LoginPage />} path="/login" />
+          </Route>
+          <Route
+            element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route element={<HomePage />} index />
           </Route>
         </Routes>
       </BrowserRouter>
