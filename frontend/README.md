@@ -57,6 +57,29 @@ The base UI system uses Material UI with Emotion:
 
 Global browser normalization is provided by MUI `CssBaseline` inside the application theme provider. Layout components use MUI primitives and theme tokens rather than hard-coded page-level styling.
 
+## Localization
+
+The frontend uses `i18next` and `react-i18next` with English and Ukrainian
+translation resources:
+
+```text
+src/i18n/
+├── index.ts
+├── resources.ts
+└── locales/
+    ├── en.ts
+    └── uk.ts
+```
+
+Translation resources are included in the application bundle and their keys are
+type-checked through `src/i18next.d.ts`. Components obtain text through
+`useTranslation()` rather than defining UI string constants.
+
+The initial language is selected from the saved language preference or the
+browser language, with English as the fallback. Only the language code is saved
+in local storage; authentication tokens remain exclusively in runtime memory and
+the backend-managed HttpOnly cookie.
+
 ## Theme
 
 The theme is split by token responsibility and composed by a single factory:
@@ -192,19 +215,19 @@ Cross-module communication must use public APIs exposed from `index.ts`. All loc
 
 ### Path aliases
 
-| Alias | Source folder |
-| --- | --- |
-| `@src/*` | `src/*` |
-| `@modules/*` | `src/modules/*` |
-| `@layouts/*` | `src/layouts/*` |
+| Alias          | Source folder     |
+| -------------- | ----------------- |
+| `@src/*`       | `src/*`           |
+| `@modules/*`   | `src/modules/*`   |
+| `@layouts/*`   | `src/layouts/*`   |
 | `@providers/*` | `src/providers/*` |
-| `@router/*` | `src/router/*` |
-| `@theme/*` | `src/theme/*` |
-| `@hooks/*` | `src/hooks/*` |
-| `@utils/*` | `src/utils/*` |
+| `@router/*`    | `src/router/*`    |
+| `@theme/*`     | `src/theme/*`     |
+| `@hooks/*`     | `src/hooks/*`     |
+| `@utils/*`     | `src/utils/*`     |
 | `@constants/*` | `src/constants/*` |
-| `@services/*` | `src/services/*` |
-| `@assets/*` | `src/assets/*` |
+| `@services/*`  | `src/services/*`  |
+| `@assets/*`    | `src/assets/*`    |
 
 Use `@src/*` for root files and paths without a dedicated alias, including shared TypeScript types.
 
