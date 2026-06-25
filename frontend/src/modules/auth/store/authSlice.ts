@@ -60,4 +60,3 @@ export const { selectAccessToken, selectAuthStatus, selectAuthUser, selectIsAuth
   authSlice.selectors
 
 export const authReducer = authSlice.reducer
-export type AuthState = IAuthState

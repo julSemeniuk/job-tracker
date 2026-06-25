@@ -17,8 +17,10 @@ export const LanguageButton = ({
     onChange(language)
   }, [language, onChange])
 
+  const buttonVariant = isActive ? 'contained' : 'outlined'
+
   return (
-    <Button onClick={handleClick} variant={isActive ? 'contained' : 'outlined'}>
+    <Button onClick={handleClick} variant={buttonVariant}>
       {language.toUpperCase()}
     </Button>
   )

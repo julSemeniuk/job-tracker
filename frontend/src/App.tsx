@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { APP_ROUTES } from '@constants/routes'
-import { MainLayout } from '@layouts/MainLayout'
+import { MainLayout } from '@layouts/MainLayout/MainLayout'
 import {
   AuthCallbackController,
   AuthController,

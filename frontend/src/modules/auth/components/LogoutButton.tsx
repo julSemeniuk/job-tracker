@@ -11,9 +11,11 @@ export const LogoutButton = (): JSX.Element => {
     void logout()
   }, [logout])
 
+  const buttonLabel = isLoggingOut ? t('auth.logout.loading') : t('auth.logout.action')
+
   return (
     <Button disabled={isLoggingOut} onClick={handleLogout}>
-      {isLoggingOut ? t('auth.logout.loading') : t('auth.logout.action')}
+      {buttonLabel}
     </Button>
   )
 }

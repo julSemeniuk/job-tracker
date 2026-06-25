@@ -2,7 +2,6 @@ import type { StylesProps } from '@src/types'
 
 export const layoutStyles = {
   root: {
-    display: 'flex',
     minHeight: '100vh',
     flexDirection: 'column',
     bgcolor: 'background.default',

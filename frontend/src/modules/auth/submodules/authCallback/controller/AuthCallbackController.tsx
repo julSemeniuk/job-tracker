@@ -22,10 +22,13 @@ export const AuthCallbackController = () => {
     const completeAuthentication = async () => {
       try {
         await refreshAuth().unwrap()
+
         void navigate(APP_ROUTES.HOME, { replace: true })
       } catch {
         const message = t('auth.callback.error')
+
         setError(message)
+
         void navigate(APP_ROUTES.LOGIN, {
           replace: true,
           state: { authError: message },
