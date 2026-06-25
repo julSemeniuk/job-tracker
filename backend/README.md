@@ -62,13 +62,58 @@ Generate independent JWT secrets for local development, for example:
 node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 ```
 
+## Run with Docker
+
+From the repository root, create the backend and frontend environment files:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+Copy-Item frontend/.env.example frontend/.env
+```
+
+Fill in the required Google OAuth and JWT values in `backend/.env`, then build
+and start the complete development stack:
+
+```bash
+docker compose up --build
+```
+
+The backend container:
+
+- is published at `http://localhost:3001`;
+- waits for PostgreSQL to pass its health check;
+- connects through the `postgres` Compose service;
+- receives
+  `DATABASE_URL=postgresql://postgres:postgres@postgres:5432/job_tracker_dev?schema=public`;
+- generates Prisma Client before starting NestJS in watch mode.
+
+Apply committed migrations explicitly after the containers are running:
+
+```bash
+docker compose exec backend pnpm exec prisma migrate deploy
+```
+
+Create a development migration when intentionally changing the Prisma schema:
+
+```bash
+docker compose exec backend pnpm db:migrate --name <migration-name>
+```
+
+Stop the full stack:
+
+```bash
+docker compose down
+```
+
 ## Database
 
-Start PostgreSQL:
+For host-based backend development, start only PostgreSQL:
 
 ```bash
 pnpm db:start
 ```
+
+This command uses the repository-root `docker-compose.yml`.
 
 Generate Prisma Client:
 
@@ -121,7 +166,7 @@ pnpm db:generate
 
 ## Run locally
 
-Start the backend in development mode:
+With PostgreSQL running, start the backend directly on the host:
 
 ```bash
 pnpm start:dev

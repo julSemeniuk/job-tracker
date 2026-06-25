@@ -18,9 +18,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "db:start": "docker compose up -d",
-    "db:stop": "docker compose down",
-    "db:restart": "docker compose down && docker compose up -d",
+    "db:start": "docker compose -f ../docker-compose.yml up -d postgres",
+    "db:stop": "docker compose -f ../docker-compose.yml stop postgres",
+    "db:restart": "docker compose -f ../docker-compose.yml stop postgres && docker compose -f ../docker-compose.yml up -d postgres",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio"

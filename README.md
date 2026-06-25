@@ -52,12 +52,61 @@ job-tracker/
 
 ## Getting Started
 
-Clone the repository, enter the project directory, and install dependencies in each application workspace:
+Clone the repository and enter the project directory:
 
 ```bash
 git clone <repository-url>
 cd job-tracker
+```
 
+### Run the full stack with Docker
+
+Create the local environment files:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+Copy-Item frontend/.env.example frontend/.env
+```
+
+Fill in the required Google OAuth and JWT values in `backend/.env`, then build
+and start PostgreSQL, the backend, and the frontend:
+
+```bash
+docker compose up --build
+```
+
+The services are available at:
+
+- frontend: `http://localhost:5173`;
+- backend API: `http://localhost:3001`;
+- backend health check: `http://localhost:3001/health`;
+- PostgreSQL: `localhost:5432`.
+
+The backend connects to PostgreSQL through Docker networking at
+`postgres:5432`. Prisma Client is generated when the backend container starts.
+Database migrations remain an explicit operation:
+
+```bash
+docker compose exec backend pnpm exec prisma migrate deploy
+```
+
+Stop the stack:
+
+```bash
+docker compose down
+```
+
+To also remove the local PostgreSQL data volume:
+
+```bash
+docker compose down -v
+```
+
+### Run applications on the host
+
+Install dependencies in each application workspace:
+
+```bash
 cd backend
 pnpm install
 
@@ -69,11 +118,15 @@ Each application currently manages its own package configuration and lockfile.
 
 ## Backend Development
 
-Copy `backend/.env.example` to `backend/.env`, then install dependencies and start the development server:
+Copy `backend/.env.example` to `backend/.env`, start PostgreSQL, and run the
+development server:
 
 ```bash
 cd backend
 pnpm install
+pnpm db:start
+pnpm db:generate
+pnpm db:migrate
 pnpm start:dev
 ```
 
@@ -81,15 +134,17 @@ Health check endpoint: `GET http://localhost:3001/health`.
 
 ## Frontend Development
 
-Install dependencies and start the Vite development server:
+Copy `frontend/.env.example` to `frontend/.env`, install dependencies, and start
+the Vite development server:
 
-```bash
+```powershell
 cd frontend
+Copy-Item .env.example .env
 pnpm install
 pnpm dev
 ```
 
-The frontend is still being established, so these instructions may evolve as the frontend setup progresses.
+The frontend is available at `http://localhost:5173`.
 
 ## Documentation
 
@@ -103,4 +158,5 @@ Development is iterative and sprint-based. Important technical choices follow a 
 
 ## Status
 
-Current status: initial backend and database setup are completed; frontend architecture is being planned.
+Current status: PostgreSQL, backend, and frontend support a shared Docker Compose
+development workflow.

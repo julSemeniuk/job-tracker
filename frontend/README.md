@@ -242,9 +242,42 @@ import App from '@src/App'
 import { JobsPage } from '@modules/jobs/pages/JobsPage'
 ```
 
+## Docker development
+
+From the repository root, create both local environment files:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+Copy-Item frontend/.env.example frontend/.env
+```
+
+Build and start PostgreSQL, the backend, and the frontend:
+
+```bash
+docker compose up --build
+```
+
+The frontend development server runs inside Docker, binds to `0.0.0.0`, and is
+published at `http://localhost:5173`. Browser API requests use
+`VITE_API_BASE_URL=http://localhost:3001`, which reaches the published backend
+port. Source files are mounted into the container so Vite hot reload remains
+available.
+
+Stop the stack:
+
+```bash
+docker compose down
+```
+
 ## Development
 
 Create `.env` from `.env.example` and point it to the backend origin:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+The local environment file should contain:
 
 ```env
 VITE_API_BASE_URL=http://localhost:3001
