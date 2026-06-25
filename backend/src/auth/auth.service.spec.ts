@@ -24,7 +24,7 @@ const APP_CONFIGURATION = {
   isProduction: false,
   port: 3001,
   frontendOrigins: ['http://localhost:5173'],
-} as const;
+};
 
 const hashRefreshToken = (token: string) =>
   createHmac('sha256', AUTH_CONFIGURATION.jwt.refreshSecret)

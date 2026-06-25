@@ -57,6 +57,29 @@ The base UI system uses Material UI with Emotion:
 
 Global browser normalization is provided by MUI `CssBaseline` inside the application theme provider. Layout components use MUI primitives and theme tokens rather than hard-coded page-level styling.
 
+## Localization
+
+The frontend uses `i18next` and `react-i18next` with English and Ukrainian
+translation resources:
+
+```text
+src/i18n/
+├── index.ts
+├── resources.ts
+└── locales/
+    ├── en.ts
+    └── uk.ts
+```
+
+Translation resources are included in the application bundle and their keys are
+type-checked through `src/i18next.d.ts`. Components obtain text through
+`useTranslation()` rather than defining UI string constants.
+
+The initial language is selected from the saved language preference or the
+browser language, with English as the fallback. Only the language code is saved
+in local storage; authentication tokens remain exclusively in runtime memory and
+the backend-managed HttpOnly cookie.
+
 ## Theme
 
 The theme is split by token responsibility and composed by a single factory:
@@ -192,19 +215,19 @@ Cross-module communication must use public APIs exposed from `index.ts`. All loc
 
 ### Path aliases
 
-| Alias | Source folder |
-| --- | --- |
-| `@src/*` | `src/*` |
-| `@modules/*` | `src/modules/*` |
-| `@layouts/*` | `src/layouts/*` |
+| Alias          | Source folder     |
+| -------------- | ----------------- |
+| `@src/*`       | `src/*`           |
+| `@modules/*`   | `src/modules/*`   |
+| `@layouts/*`   | `src/layouts/*`   |
 | `@providers/*` | `src/providers/*` |
-| `@router/*` | `src/router/*` |
-| `@theme/*` | `src/theme/*` |
-| `@hooks/*` | `src/hooks/*` |
-| `@utils/*` | `src/utils/*` |
+| `@router/*`    | `src/router/*`    |
+| `@theme/*`     | `src/theme/*`     |
+| `@hooks/*`     | `src/hooks/*`     |
+| `@utils/*`     | `src/utils/*`     |
 | `@constants/*` | `src/constants/*` |
-| `@services/*` | `src/services/*` |
-| `@assets/*` | `src/assets/*` |
+| `@services/*`  | `src/services/*`  |
+| `@assets/*`    | `src/assets/*`    |
 
 Use `@src/*` for root files and paths without a dedicated alias, including shared TypeScript types.
 
@@ -220,6 +243,63 @@ import { JobsPage } from '@modules/jobs/pages/JobsPage'
 ```
 
 ## Development
+
+Create `.env` from `.env.example` and point it to the backend origin:
+
+```env
+VITE_API_BASE_URL=http://localhost:3001
+```
+
+Environment-specific backend origins are supplied at build or development time;
+application modules consume the centralized `API_BASE_URL` value rather than
+hard-coding a host.
+
+## Authentication
+
+Authentication is implemented as the `src/modules/auth` business module. It
+contains the login and callback pages, route protection, RTK Query endpoints,
+and the Redux auth slice.
+
+The frontend follows this token-storage strategy:
+
+- the short-lived access token exists only in the in-memory Redux store;
+- the backend stores the refresh token in an HttpOnly cookie, so frontend
+  JavaScript cannot read it;
+- neither token is stored in `localStorage` or `sessionStorage`;
+- tokens are never read from or written to URL query parameters;
+- reloading the page clears the in-memory access token, after which the app
+  obtains a new one through `POST /auth/refresh` with credentials included.
+
+The application starts by attempting a refresh-cookie bootstrap. The
+`/auth/callback` page owns that request after Google redirects back, preventing
+concurrent refresh-token rotations. Protected routes wait for this check before
+rendering or redirecting to `/login`.
+
+Auth API endpoints:
+
+```text
+POST /auth/refresh  Restore or rotate the session and return an access token
+GET  /auth/me       Return the current user using the Bearer access token
+POST /auth/logout   Revoke the refresh session and clear its cookie
+```
+
+To test the flow locally:
+
+1. Start the backend on `http://localhost:3001` with Google OAuth configured.
+2. Start the frontend with `pnpm dev`.
+3. Open `http://localhost:5173/login`.
+4. Select **Continue with Google** and complete Google authentication.
+5. Confirm the browser returns through `/auth/callback` and lands on `/`.
+6. Confirm `/auth/refresh` sends the HttpOnly cookie and its JSON response
+   contains an access token and safe user object.
+7. Confirm protected API calls send `Authorization: Bearer <access-token>`.
+8. Reload the page and confirm the session is restored through another refresh.
+9. Select **Sign out** and confirm the app returns to `/login` and protected
+   routes are no longer accessible.
+
+At no point should either token appear in browser storage or the address bar.
+
+## Development commands
 
 ```bash
 pnpm install
